@@ -3,6 +3,7 @@ const router = express.Router();
 const upload = require('../multer/multer')
 
 const admin = require('../controller/admincontroller')
+const admindata = require('../controller/admindata')
 // const authadmin = require('../middleware/admin')
 
 router.post('/admin/login',admin.Login)
@@ -27,5 +28,10 @@ router.delete('/admin/deleteProduct/:id',admin.deleteProduct)
 
 router.put('/admin/editProduct/:id', upload.array('images'), admin.editProduct);
 
+router.get('/admin/coupon',admindata.coupon)
+
+router.post('/admin/addcoupon',admindata.addCoupon)
+
+router.delete('/admin/deleteCoupon/:id',admindata.deleteCoupon)
 
 module.exports = router
