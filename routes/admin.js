@@ -34,4 +34,7 @@ router.post('/admin/addcoupon',admindata.addCoupon)
 
 router.delete('/admin/deleteCoupon/:id',admindata.deleteCoupon)
 
+router.put('/admin/editCoupon/:id',admindata.editCoupon);
+
+
 module.exports = router

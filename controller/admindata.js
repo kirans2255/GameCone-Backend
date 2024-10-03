@@ -25,16 +25,16 @@ const addCoupon = async (req, res) => {
     try {
         const newCoupon = new Coupon({
             Coupon_Name: Coupon_Name,
-            Coupon_Value:Coupon_Value,
-            Coupon_Type:Coupon_Type,
+            Coupon_Value: Coupon_Value,
+            Coupon_Type: Coupon_Type,
             Start_Date: Start_Date,
             End_Date: End_Date,
             Active_Status: Active_Status,
         });
 
-         await newCoupon.save();
+        await newCoupon.save();
 
-        res.status(201).json({ success: true, coupon: newCoupon});
+        res.status(201).json({ success: true, coupon: newCoupon });
     } catch (error) {
         console.error('Error adding coupon:', error);
         res.status(500).json({ success: false, message: 'Failed to add coupon' });
@@ -45,22 +45,63 @@ const deleteCoupon = async (req, res) => {
 
     const couponID = req.params.id;
     console.log(couponID);
-  
+
     try {
-      const coupons = await Coupon.findByIdAndDelete(couponID);
-      if (!coupons) {
-        return res.status(404).json({ error: 'coupon Not Found' })
-      }
-  
-      res.status(201).json({ message: 'coupont Deleted', coupons })
+        const coupons = await Coupon.findByIdAndDelete(couponID);
+        if (!coupons) {
+            return res.status(404).json({ error: 'coupon Not Found' })
+        }
+
+        res.status(201).json({ message: 'coupont Deleted', coupons })
     } catch (error) {
-      console.error('Error deleting coupon:', error);
-      res.status(500).json({ error: 'Error deleting coupon' });
+        console.error('Error deleting coupon:', error);
+        res.status(500).json({ error: 'Error deleting coupon' });
     }
-  }
+}
+
+const editCoupon = async (req, res) => {
+    try {
+        console.log('Request Body:', req.body);
+
+        const couponId = req.params.id;
+
+        console.log("id:", couponId);
+
+        const { Coupon_Name, Coupon_Value, Coupon_Type, Start_Date, End_Date, Active_Status } = req.body;
+
+        console.log("name:", Coupon_Name);
+
+        if (!Coupon_Name) {
+            return res.status(400).json({ error: 'Name is required' });
+        }
+
+        // Find the coupon by ID
+        const coupon = await Coupon.findById(couponId);
+
+        if (!coupon) {
+            return res.status(404).json({ error: 'coupon not found' });
+        }
+
+
+        coupon.Coupon_Name = Coupon_Name,
+        coupon.Coupon_Value = Coupon_Value,
+        coupon.Coupon_Type = Coupon_Type,
+        coupon.Start_Date = Start_Date,
+        coupon.End_Date = End_Date,
+        coupon.Active_Status = Active_Status,
+
+
+        await coupon.save();
+        res.json({ message: 'coupon updated successfully' });
+    } catch (error) {
+        console.error('Error updating coupon:', error);
+        res.status(500).json({ error: 'Error updating coupon' });
+    }
+}
 
 module.exports = {
     coupon,
     addCoupon,
-    deleteCoupon
+    deleteCoupon,
+    editCoupon
 }

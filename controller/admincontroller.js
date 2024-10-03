@@ -208,7 +208,7 @@ const toggleBlock = async function (req, res) {
 
 const addProduct = async (req, res) => {
   try {
-    const { name ,price ,edition ,category} = req.body;
+    const { name ,price ,edition ,category, quantity} = req.body;
     console.log("suahil :",req.body);
 
 
@@ -233,11 +233,13 @@ const addProduct = async (req, res) => {
       price: price,
       edition: edition,
       category: category,
+      quantity: quantity,
       images : {
         public_id: result.public_id,
         url: result.secure_url,
       },
     });
+    
 
     await newProduct.save();
     res.status(201).json({ success: true, product: newProduct });
@@ -289,6 +291,7 @@ const editProduct = async (req, res) => {
     const price = req.body.price;
     const edition = req.body.edition;
     const category = req.body.category;
+    const quantity = req.body.quantity;
 
     console.log("name:", name);
 
@@ -331,6 +334,7 @@ const editProduct = async (req, res) => {
     product.price = price;
     product.edition = edition;
     product.category = category;
+    product.quantity = quantity;
 
 
     await product.save();
