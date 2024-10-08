@@ -84,14 +84,14 @@ const editCoupon = async (req, res) => {
 
 
         coupon.Coupon_Name = Coupon_Name,
-        coupon.Coupon_Value = Coupon_Value,
-        coupon.Coupon_Type = Coupon_Type,
-        coupon.Start_Date = Start_Date,
-        coupon.End_Date = End_Date,
-        coupon.Active_Status = Active_Status,
+            coupon.Coupon_Value = Coupon_Value,
+            coupon.Coupon_Type = Coupon_Type,
+            coupon.Start_Date = Start_Date,
+            coupon.End_Date = End_Date,
+            coupon.Active_Status = Active_Status,
 
 
-        await coupon.save();
+            await coupon.save();
         res.json({ message: 'coupon updated successfully' });
     } catch (error) {
         console.error('Error updating coupon:', error);
@@ -99,9 +99,89 @@ const editCoupon = async (req, res) => {
     }
 }
 
+const statusCoupon = async (req, res) => {
+    try {
+        const updatedCoupon = await Coupon.findByIdAndUpdate(
+            req.params.id,
+            req.body,
+            { new: true, runValidators: true }
+        );
+        console.log("update",updatedCoupon);
+        
+        res.status(200).json({ success: true, coupon: updatedCoupon });
+    } catch (error) {
+        res.status(400).json({ success: false, message: error.message });
+    }
+};
+
+
+const sort = async (req, res) => {
+    const { sortOrder } = req.query;
+    let sort;
+
+    switch (sortOrder) {
+        case 'priceLowToHigh':
+            sort = { price: 1 };
+            break;
+        case 'priceHighToLow':
+            sort = { price: -1 }; 
+            break;
+        case 'nameAtoZ':
+            sort = { name: 1 }; 
+            break;
+        case 'nameZtoA':
+            sort = { name: -1 };
+            break;
+        default:
+            sort = {}; // No sorting
+    }
+
+    try {
+        const products = await Product.find().sort(sort);
+        res.json(products);
+    } catch (error) {
+        console.error('Error fetching products:', error);
+        res.status(500).json({ message: 'Internal Server Error' });
+    }
+};
+
+
+const searchProduct = async (req, res) => {
+    const { search } = req.query; 
+
+    console.log("search",req.query);
+    
+  
+    try {
+      // If there's a search term, search for products and categories by name
+      const categoryQuery = search
+        ? { CategoryName: { $regex: search, $options: 'i' } } 
+        : {}; // No search term means no filter
+  
+      const productQuery = search
+        ? { name: { $regex: search, $options: 'i' } } // Case-insensitive search for product names
+        : {}; // No search term means no filter
+  
+      // Find matching categories and products
+      const categories = await Categorys.find(categoryQuery);
+      const products = await Product.find(productQuery);
+  
+      // Respond with the filtered results
+      res.json({ categories, products });
+    } catch (error) {
+      console.error('Error fetching products:', error);
+      res.status(500).json({ message: 'Internal Server Error' });
+    }
+  };
+  
+
+
 module.exports = {
     coupon,
     addCoupon,
     deleteCoupon,
-    editCoupon
+    editCoupon,
+    sort,
+    statusCoupon,
+    searchProduct
 }

@@ -12,8 +12,8 @@ const Coupon = new mongoose.Schema({
         enum: ['percentage', 'fixedPrice'],
         default: 'percentage'
       },
-      Start_Date: { type: String, required: true }, 
-      End_Date: { type: String, required: true }
+      Start_Date: { type: String }, 
+      End_Date: { type: String }
   
 })
 

@@ -34,7 +34,15 @@ router.post('/admin/addcoupon',admindata.addCoupon)
 
 router.delete('/admin/deleteCoupon/:id',admindata.deleteCoupon)
 
-router.put('/admin/editCoupon/:id',admindata.editCoupon);
+router.put('/admin/editCoupon/:id',admindata.editCoupon)
+
+router.put('/admin/statusCoupon/:id',admindata.statusCoupon)
+
+//sort
+
+router.get('/admin/product/sort',admindata.sort)
+
+router.get('/admin/products/search',admindata.searchProduct)
 
 
 module.exports = router

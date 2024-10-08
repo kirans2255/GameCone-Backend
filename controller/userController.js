@@ -51,8 +51,9 @@ const Signup = async (req, res) => {
 }
 
 const successGoogleLogin = async (req, res) => {
-    try {
 
+    try {
+        console.log(req.user);
         if (!req.user) {
             return res.status(401).send("No user data, login failed");
         }
@@ -173,7 +174,7 @@ const otpLogin = async (req, res) => {
     const otp = generateOtp();
     console.log("Generated OTP is:", otp);
   
-    const message = `Hello ${otp}, This is a test message from spring edge jobseekers`;
+    const message = `Hello ${otp}, This is a test message from spring edge`;
     const params = {
       sender: "SEDEMO",
       apikey: process.env.API_KEY ,
@@ -213,6 +214,9 @@ const otpLogin = async (req, res) => {
       res.status(400).json({ error: "Invalid OTP" });
     }
   };
+
+
+  
 
 
 
