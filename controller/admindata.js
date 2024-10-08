@@ -106,8 +106,8 @@ const statusCoupon = async (req, res) => {
             req.body,
             { new: true, runValidators: true }
         );
-        console.log("update",updatedCoupon);
-        
+        console.log("update", updatedCoupon);
+
         res.status(200).json({ success: true, coupon: updatedCoupon });
     } catch (error) {
         res.status(400).json({ success: false, message: error.message });
@@ -119,15 +119,17 @@ const sort = async (req, res) => {
     const { sortOrder } = req.query;
     let sort;
 
+    console.log("lo",req.query);
+
     switch (sortOrder) {
         case 'priceLowToHigh':
             sort = { price: 1 };
             break;
         case 'priceHighToLow':
-            sort = { price: -1 }; 
+            sort = { price: -1 };
             break;
         case 'nameAtoZ':
-            sort = { name: 1 }; 
+            sort = { name: 1 };
             break;
         case 'nameZtoA':
             sort = { name: -1 };
@@ -138,7 +140,7 @@ const sort = async (req, res) => {
 
     try {
         const products = await Product.find().sort(sort);
-        res.json(products);
+        res.json({ products });
     } catch (error) {
         console.error('Error fetching products:', error);
         res.status(500).json({ message: 'Internal Server Error' });
@@ -147,33 +149,36 @@ const sort = async (req, res) => {
 
 
 const searchProduct = async (req, res) => {
-    const { search } = req.query; 
+    const { search } = req.query;
 
-    console.log("search",req.query);
-    
-  
+    // console.log("search",req.query);
+
     try {
-      // If there's a search term, search for products and categories by name
-      const categoryQuery = search
-        ? { CategoryName: { $regex: search, $options: 'i' } } 
-        : {}; // No search term means no filter
-  
-      const productQuery = search
-        ? { name: { $regex: search, $options: 'i' } } // Case-insensitive search for product names
-        : {}; // No search term means no filter
-  
-      // Find matching categories and products
-      const categories = await Categorys.find(categoryQuery);
-      const products = await Product.find(productQuery);
-  
-      // Respond with the filtered results
-      res.json({ categories, products });
+        // If there's a search term, search for products and categories by name
+        const categoryQuery = search
+            ? { CategoryName: { $regex: search, $options: 'i' } }
+            : {}; // No search term means no filter
+
+            console.log("c",categoryQuery);
+            
+
+        const productQuery = search
+            ? { name: { $regex: search, $options: 'i' } }
+            : {};
+
+            console.log("d",productQuery);
+            
+
+        const categories = await Categorys.find(categoryQuery);
+        const products = await Product.find(productQuery);
+
+        res.json({ categories, products });
     } catch (error) {
-      console.error('Error fetching products:', error);
-      res.status(500).json({ message: 'Internal Server Error' });
+        console.error('Error fetching products:', error);
+        res.status(500).json({ message: 'Internal Server Error' });
     }
-  };
-  
+};
+
 
 
 module.exports = {
