@@ -3,6 +3,8 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt')
 require('dotenv').config();
 const springedge = require('springedge')
+const Categorys = require('../model/Category')
+const Product = require('../model/Product')
 
 const Signup = async (req, res) => {
     const { name, email, password } = req.body;
@@ -125,8 +127,8 @@ const Login = async (req, res) => {
             return res.status(404).json({ error: "User Not Found" });
         }
 
-        if(user.isBlocked) {
-            return res.status(400).json({ error :"User is Blocked"})
+        if (user.isBlocked) {
+            return res.status(400).json({ error: "User is Blocked" })
         }
 
         const isPasswordValid = await bcrypt.compare(password, user.password);
@@ -158,66 +160,80 @@ const Login = async (req, res) => {
 const otpLogin = async (req, res) => {
     const { phone } = req.body;
     console.log(phone);
-  
+
     // const Excict = await User.findOne({ phone });
     // if (!Excict) {
     //   return res.status(400).json({ message: "Invalid Phone No" });
     // }
-  
+
     // Function to generate OTP
     const generateOtp = () => {
-      return Math.floor(100000 + Math.random() * 900000); 
+        return Math.floor(100000 + Math.random() * 900000);
     };
-  
+
     // Ensure phone number is correctly formatted with country code
-    const formattedPhone = `+91${phone}`; 
+    const formattedPhone = `+91${phone}`;
     const otp = generateOtp();
     console.log("Generated OTP is:", otp);
-  
+
     const message = `Hello ${otp}, This is a test message from spring edge`;
     const params = {
-      sender: "SEDEMO",
-      apikey: process.env.API_KEY ,
-      to: [formattedPhone],
-      message: message,
-      format: "json",
+        sender: "SEDEMO",
+        apikey: process.env.API_KEY,
+        to: [formattedPhone],
+        message: message,
+        format: "json",
     };
-  
+
     // Set OTP in cookie
     res.cookie("otp", otp, {
-      httpOnly: true, // Prevent JavaScript from accessing the cookie
-      secure: false, // Set to true in production for HTTPS
-      sameSite: "Lax",
-      maxAge: 5 * 60 * 1000, // Or 'Strict' for more security
+        httpOnly: true, // Prevent JavaScript from accessing the cookie
+        secure: false, // Set to true in production for HTTPS
+        sameSite: "Lax",
+        maxAge: 5 * 60 * 1000, // Or 'Strict' for more security
     });
-  
+
     // Send OTP via SpringEdge
     springedge.messages.send(params, 5000, function (err, response) {
-      if (err) {
-        console.log(err);
-        return res.status(500).json({ error: "Failed to send message" });
-      }
-      console.log("Response:", response);
-      return res.status(200).json({ success: true, message: "Message sent" });
+        if (err) {
+            console.log(err);
+            return res.status(500).json({ error: "Failed to send message" });
+        }
+        console.log("Response:", response);
+        return res.status(200).json({ success: true, message: "Message sent" });
     });
-  };
-  
-  const verifyOtp = (req, res) => {
+};
+
+const verifyOtp = (req, res) => {
     const { otp } = req.body;
     console.log("Body OTP:", otp);
     const cookieOtp = req.cookies.otp;
-  
+
     console.log("Cookie OTP:", cookieOtp);
     if (cookieOtp === otp) {
-      res.status(200).json({ success: true, message: "OTP verified" });
+        res.status(200).json({ success: true, message: "OTP verified" });
     } else {
-      res.status(400).json({ error: "Invalid OTP" });
+        res.status(400).json({ error: "Invalid OTP" });
     }
-  };
+};
 
 
-  
+const singlepage = async (req, res) => {
+    const { id } = req.params;
 
+    // console.log("id",id);
+    
+    try {
+        const product = await Product.findById(id);
+        if (!product) {
+            return res.status(404).json({ error: 'Product not found' });
+        }
+        res.json(product);
+    } catch (error) {
+        console.error('Error fetching product:', error);
+        res.status(500).json({ error: 'Error fetching product' });
+    }
+};
 
 
 module.exports = {
@@ -226,5 +242,6 @@ module.exports = {
     failureGooglelogin,
     Login,
     verifyOtp,
-    otpLogin
+    otpLogin,
+    singlepage
 }

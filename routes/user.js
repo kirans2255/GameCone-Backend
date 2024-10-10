@@ -21,4 +21,6 @@ router.get("/failure", user.failureGooglelogin);
 
 router.post('/otplogin',user.otpLogin)
 
+router.get('/single/:id',user.singlepage)
+
 module.exports = router
