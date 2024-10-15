@@ -25,5 +25,6 @@ router.get('/single/:id',user.singlepage)
 
 router.post('/addcart',authuser,user.cartadd)
 
+router.get('/cart',authuser,user.getcart)
 
 module.exports = router 

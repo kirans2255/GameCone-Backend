@@ -236,38 +236,41 @@ const singlepage = async (req, res) => {
     }
 };
 
-const cartadd = async(req,res) => {
-    const { productId } = req.body;
+const cartadd = async (req, res) => {
+    const { productId, name, price, quantity, images } = req.body;
     const userId = req.user.id; 
+    if (!userId) {
+      return res.status(400).json({ message: 'User ID is required' });
+    }
   
     try {
       let cart = await Cart.findOne({ userId });
   
-      if (cart) {
-        const productExists = cart.products.find(
-          (product) => product.toString() === productId
-        );
-  
-        if (productExists) {
-          return res.status(400).json({ message: 'Product already in cart' });
-        }
-  
-        cart.products.push(productId);
-        await cart.save();
-      } else {
+      if (!cart) {
         cart = new Cart({
           userId,
-          products: [productId],
+          products: [{ productId, name, price, quantity, images }],
         });
-        await cart.save();
+      } else {
+        // Check if the product already exists in the cart
+        const productIndex = cart.products.findIndex(p => p.productId.toString() === productId);
+  
+        if (productIndex > -1) {
+          cart.products[productIndex].quantity += quantity;
+        } else {
+          cart.products.push({ productId, name, price, quantity, images });
+        }
       }
   
-      res.status(200).json({ message: 'Product added to cart', cart });
+      await cart.save();
+  
+      return res.status(200).json({ success: true, message: 'Product added to cart', cart });
     } catch (error) {
-      console.error(error);
-      res.status(500).json({ message: 'Server error' });
+      console.error('Error adding product to cart:', error);
+      return res.status(500).json({ success: false, message: 'Error adding product to cart', error });
     }
-}
+  };
+  
 
 const getcart = async(req,res) => {
     const userId = req.user.id;
