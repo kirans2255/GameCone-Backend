@@ -119,7 +119,7 @@ const sort = async (req, res) => {
     const { sortOrder } = req.query;
     let sort;
 
-    console.log("lo",req.query);
+    console.log("lo", req.query);
 
     switch (sortOrder) {
         case 'priceLowToHigh':
@@ -159,15 +159,15 @@ const searchProduct = async (req, res) => {
             ? { CategoryName: { $regex: search, $options: 'i' } }
             : {}; // No search term means no filter
 
-            console.log("c",categoryQuery);
-            
+        console.log("c", categoryQuery);
+
 
         const productQuery = search
             ? { name: { $regex: search, $options: 'i' } }
             : {};
 
-            console.log("d",productQuery);
-            
+        console.log("d", productQuery);
+
 
         const categories = await Categorys.find(categoryQuery);
         const products = await Product.find(productQuery);
@@ -180,6 +180,21 @@ const searchProduct = async (req, res) => {
 };
 
 
+const filterProduct = async (req, res) => {
+    const { minPrice, maxPrice } = req.query;
+    try {
+        const products = await Product.find({
+            price: { $gte: minPrice, $lte: maxPrice },
+        });
+        res.json({ success: true, products });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+}
+
+
+
+
 
 module.exports = {
     coupon,
@@ -188,5 +203,6 @@ module.exports = {
     editCoupon,
     sort,
     statusCoupon,
-    searchProduct
+    searchProduct,
+    filterProduct,
 }

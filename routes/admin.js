@@ -44,5 +44,7 @@ router.get('/admin/product/sort',admindata.sort)
 
 router.get('/admin/products/search',admindata.searchProduct)
 
+router.get('/admin/product/filter',admindata.filterProduct)
+
 
 module.exports = router

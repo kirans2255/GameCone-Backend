@@ -1,7 +1,7 @@
 const jwt = require('jsonwebtoken');
 
 const verifyToken = (req, res, next) => {
-  const token = req.cookies.jwt; // Assuming you're using cookies for token storage
+  const token = req.cookies.jwt; 
 
   if (!token) {
     return res.redirect("/admin")

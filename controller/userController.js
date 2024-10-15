@@ -4,6 +4,7 @@ const bcrypt = require('bcrypt')
 require('dotenv').config();
 const springedge = require('springedge')
 const Categorys = require('../model/Category')
+const Cart = require('../model/Cart')
 const Product = require('../model/Product')
 
 const Signup = async (req, res) => {
@@ -235,6 +236,57 @@ const singlepage = async (req, res) => {
     }
 };
 
+const cartadd = async(req,res) => {
+    const { productId } = req.body;
+    const userId = req.user.id; 
+  
+    try {
+      let cart = await Cart.findOne({ userId });
+  
+      if (cart) {
+        const productExists = cart.products.find(
+          (product) => product.toString() === productId
+        );
+  
+        if (productExists) {
+          return res.status(400).json({ message: 'Product already in cart' });
+        }
+  
+        cart.products.push(productId);
+        await cart.save();
+      } else {
+        cart = new Cart({
+          userId,
+          products: [productId],
+        });
+        await cart.save();
+      }
+  
+      res.status(200).json({ message: 'Product added to cart', cart });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: 'Server error' });
+    }
+}
+
+const getcart = async(req,res) => {
+    const userId = req.user.id;
+
+    console.log("user:",userId);
+    
+
+    try {
+      const cart = await Cart.findOne({ userId }).populate('products');
+      if (!cart) {
+        return res.status(404).json({ message: 'Cart not found' });
+      }
+  
+      res.status(200).json({ cart });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: 'Server error' });
+    }
+}
 
 module.exports = {
     Signup,
@@ -243,5 +295,7 @@ module.exports = {
     Login,
     verifyOtp,
     otpLogin,
-    singlepage
+    singlepage,
+    cartadd,
+    getcart
 }

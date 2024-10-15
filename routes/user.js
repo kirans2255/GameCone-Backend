@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const passport = require('passport')
 const user = require('../controller/userController')
-const authadmin = require('../middleware/admin');
+const authuser = require('../middleware/user');
 
 router.post('/signup', user.Signup)
 
@@ -23,4 +23,7 @@ router.post('/otplogin',user.otpLogin)
 
 router.get('/single/:id',user.singlepage)
 
-module.exports = router
+router.post('/addcart',authuser,user.cartadd)
+
+
+module.exports = router 
