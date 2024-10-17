@@ -238,11 +238,15 @@ const singlepage = async (req, res) => {
 
 const cartadd = async (req, res) => {
     const { productId, name, price, quantity, images } = req.body;
+
+    // console.log("i",req.body);
+    
     const userId = req.user.id; 
+    
     if (!userId) {
       return res.status(400).json({ message: 'User ID is required' });
     }
-  
+
     try {
       let cart = await Cart.findOne({ userId });
   
@@ -273,11 +277,11 @@ const cartadd = async (req, res) => {
   
 
 const getcart = async(req,res) => {
+    
     const userId = req.user.id;
 
-    console.log("user:",userId);
+    // console.log("user:",userId);
     
-
     try {
       const cart = await Cart.findOne({ userId }).populate('products');
       if (!cart) {
@@ -291,6 +295,37 @@ const getcart = async(req,res) => {
     }
 }
 
+
+const deletecart = async (req, res) => {
+    const userId = req.user.id;
+    const { productId } = req.body;
+
+    //  console.log(productId);
+    
+    try {
+        const cart = await Cart.findOne({ userId });
+
+        if (!cart) {
+            return res.status(404).json({ message: 'Cart not found' });
+        }
+
+        const productIndex = cart.products.findIndex(product => product._id.toString() === productId);
+
+        if (productIndex === -1) {
+            return res.status(404).json({ message: 'Product not found in cart' });
+        }
+
+        cart.products.splice(productIndex, 1);
+        await cart.save(); 
+
+        res.status(200).json({ message: 'Product removed from cart', cart });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Server error' });
+    }
+};
+
+
 module.exports = {
     Signup,
     successGoogleLogin,
@@ -300,5 +335,6 @@ module.exports = {
     otpLogin,
     singlepage,
     cartadd,
-    getcart
+    getcart,
+    deletecart
 }

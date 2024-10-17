@@ -27,4 +27,6 @@ router.post('/addcart',authuser,user.cartadd)
 
 router.get('/cart',authuser,user.getcart)
 
+router.delete('/deletecart',authuser,user.deletecart)
+
 module.exports = router 
