@@ -6,6 +6,7 @@ const springedge = require('springedge')
 const Categorys = require('../model/Category')
 const Cart = require('../model/Cart')
 const Product = require('../model/Product')
+const Wishlist = require('../model/Wishlist')
 
 const Signup = async (req, res) => {
     const { name, email, phoneNumber, password } = req.body;
@@ -227,6 +228,16 @@ const verifyOtp = (req, res) => {
 };
 
 
+const home = async (req, res) => {
+    try {
+        const products = await Product.find(); 
+        return res.status(200).json({ products });
+    } catch (error) {
+        console.error('Error fetching products:', error);
+        return res.status(500).json({ message: 'Internal Server Error' });
+    }
+}
+
 const singlepage = async (req, res) => {
     const { id } = req.params;
 
@@ -352,15 +363,95 @@ const user = async (req, res) => {
     }
 }
 
-const home = async (req, res) => {
+
+const getwishlist = async (req, res) => {
+
+    const userId = req.user.id;
+
+    // console.log("user:",userId);
+
     try {
-        const products = await Product.find(); 
-        return res.status(200).json({ products });
+        const wishlist = await Wishlist.findOne({ userId }).populate('products');
+        if (!wishlist) {
+            return res.status(404).json({ message: 'wishlist not found' });
+        }
+
+        res.status(200).json({ wishlist });
     } catch (error) {
-        console.error('Error fetching products:', error);
-        return res.status(500).json({ message: 'Internal Server Error' });
+        console.error(error);
+        res.status(500).json({ message: 'Server error' });
     }
 }
+
+
+const wishlistadd = async (req, res) => {
+    const { productId, name, price, quantity, images } = req.body;
+
+    // console.log("i",req.body);
+
+    const userId = req.user.id;
+
+    if (!userId) {
+        return res.status(400).json({ message: 'User ID is required' });
+    }
+
+    try {
+        let wishlist = await Wishlist.findOne({ userId });
+
+        if (!wishlist) {
+            wishlist = new Wishlist({
+                userId,
+                products: [{ productId, name, price, quantity, images }],
+            });
+        } else {
+            // Check if the product already exists in the wishlist
+            const productIndex = wishlist.products.findIndex(p => p.productId.toString() === productId);
+
+            if (productIndex > -1) {
+                wishlist.products[productIndex].quantity += quantity;
+            } else {
+                wishlist.products.push({ productId, name, price, quantity, images });
+            }
+        }
+
+        await wishlist.save();
+
+        return res.status(200).json({ success: true, message: 'Product added to wishlist', wishlist });
+    } catch (error) {
+        console.error('Error adding product to wishlist:', error);
+        return res.status(500).json({ success: false, message: 'Error adding product to wishlist', error });
+    }
+};
+
+
+const deletewishlist = async (req, res) => {
+    const userId = req.user.id;
+    const { productId } = req.body;
+
+    //  console.log(productId);
+
+    try {
+        const wishlist = await Wishlist.findOne({ userId });
+
+        if (!wishlist) {
+            return res.status(404).json({ message: 'wishlist not found' });
+        }
+
+        const productIndex = wishlist.products.findIndex(product => product._id.toString() === productId);
+
+        if (productIndex === -1) {
+            return res.status(404).json({ message: 'Product not found in wishlist' });
+        }
+
+        wishlist.products.splice(productIndex, 1);
+        await wishlist.save();
+
+        res.status(200).json({ message: 'Product removed from wishlist', wishlist });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Server error' });
+    }
+};
 
 
 const handleLogout = async (req, res) => {
@@ -393,5 +484,8 @@ module.exports = {
     deletecart,
     user,
     home,
+    getwishlist,
+    wishlistadd,
+    deletewishlist,
     handleLogout
 }

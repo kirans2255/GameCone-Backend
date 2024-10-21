@@ -25,13 +25,22 @@ router.post('/otplogin',user.otpLogin)
 
 router.get('/single/:id',user.singlepage)
 
+router.get('/user',authuser,user.user)
+
+//cart
 router.post('/addcart',authuser,user.cartadd)
 
 router.get('/cart',authuser,user.getcart)
 
 router.delete('/deletecart',authuser,user.deletecart)
 
-router.get('/user',authuser,user.user)
+
+//wishlist
+router.get('/wishlist',authuser,user.getwishlist)
+
+router.post('/addwishlist',authuser,user.wishlistadd)
+
+router.delete('/deletewishlist',authuser,user.deletewishlist)
 
 router.get('/logout',user.handleLogout)
 
