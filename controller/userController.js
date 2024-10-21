@@ -8,7 +8,7 @@ const Cart = require('../model/Cart')
 const Product = require('../model/Product')
 
 const Signup = async (req, res) => {
-    const { name, email, password } = req.body;
+    const { name, email, phoneNumber, password } = req.body;
     console.log(req.body);
 
 
@@ -26,6 +26,7 @@ const Signup = async (req, res) => {
         const newUser = new User({
             name,
             email,
+            phoneNumber,
             password: hashedpassword,
         })
 
@@ -38,7 +39,8 @@ const Signup = async (req, res) => {
             {
                 id: newUser._id,
                 name: newUser.name,
-                email: newUser.email
+                email: newUser.email,
+                phoneNumber: newUser.phoneNumber,
             },
             process.env.JWT_KEY,
             { expiresIn: "24h" }
@@ -52,6 +54,12 @@ const Signup = async (req, res) => {
     }
 
 }
+
+// const handleLogin = async (req, res) => {
+//     const { email, password } = req.body;
+
+// }
+
 
 const successGoogleLogin = async (req, res) => {
 
@@ -223,7 +231,7 @@ const singlepage = async (req, res) => {
     const { id } = req.params;
 
     // console.log("id",id);
-    
+
     try {
         const product = await Product.findById(id);
         if (!product) {
@@ -240,58 +248,58 @@ const cartadd = async (req, res) => {
     const { productId, name, price, quantity, images } = req.body;
 
     // console.log("i",req.body);
-    
-    const userId = req.user.id; 
-    
+
+    const userId = req.user.id;
+
     if (!userId) {
-      return res.status(400).json({ message: 'User ID is required' });
+        return res.status(400).json({ message: 'User ID is required' });
     }
 
     try {
-      let cart = await Cart.findOne({ userId });
-  
-      if (!cart) {
-        cart = new Cart({
-          userId,
-          products: [{ productId, name, price, quantity, images }],
-        });
-      } else {
-        // Check if the product already exists in the cart
-        const productIndex = cart.products.findIndex(p => p.productId.toString() === productId);
-  
-        if (productIndex > -1) {
-          cart.products[productIndex].quantity += quantity;
-        } else {
-          cart.products.push({ productId, name, price, quantity, images });
-        }
-      }
-  
-      await cart.save();
-  
-      return res.status(200).json({ success: true, message: 'Product added to cart', cart });
-    } catch (error) {
-      console.error('Error adding product to cart:', error);
-      return res.status(500).json({ success: false, message: 'Error adding product to cart', error });
-    }
-  };
-  
+        let cart = await Cart.findOne({ userId });
 
-const getcart = async(req,res) => {
-    
+        if (!cart) {
+            cart = new Cart({
+                userId,
+                products: [{ productId, name, price, quantity, images }],
+            });
+        } else {
+            // Check if the product already exists in the cart
+            const productIndex = cart.products.findIndex(p => p.productId.toString() === productId);
+
+            if (productIndex > -1) {
+                cart.products[productIndex].quantity += quantity;
+            } else {
+                cart.products.push({ productId, name, price, quantity, images });
+            }
+        }
+
+        await cart.save();
+
+        return res.status(200).json({ success: true, message: 'Product added to cart', cart });
+    } catch (error) {
+        console.error('Error adding product to cart:', error);
+        return res.status(500).json({ success: false, message: 'Error adding product to cart', error });
+    }
+};
+
+
+const getcart = async (req, res) => {
+
     const userId = req.user.id;
 
     // console.log("user:",userId);
-    
+
     try {
-      const cart = await Cart.findOne({ userId }).populate('products');
-      if (!cart) {
-        return res.status(404).json({ message: 'Cart not found' });
-      }
-  
-      res.status(200).json({ cart });
+        const cart = await Cart.findOne({ userId }).populate('products');
+        if (!cart) {
+            return res.status(404).json({ message: 'Cart not found' });
+        }
+
+        res.status(200).json({ cart });
     } catch (error) {
-      console.error(error);
-      res.status(500).json({ message: 'Server error' });
+        console.error(error);
+        res.status(500).json({ message: 'Server error' });
     }
 }
 
@@ -301,7 +309,7 @@ const deletecart = async (req, res) => {
     const { productId } = req.body;
 
     //  console.log(productId);
-    
+
     try {
         const cart = await Cart.findOne({ userId });
 
@@ -316,12 +324,58 @@ const deletecart = async (req, res) => {
         }
 
         cart.products.splice(productIndex, 1);
-        await cart.save(); 
+        await cart.save();
 
         res.status(200).json({ message: 'Product removed from cart', cart });
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Server error' });
+    }
+};
+
+const user = async (req, res) => {
+    const userId = req.user.id;
+
+    try {
+
+        if (req.user.id !== userId) {
+            return res.status(403).json({ message: 'Access denied' });
+        }
+        const user = await User.findById(userId).select('-password');
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        res.json(user);
+    } catch (err) {
+        res.status(500).json({ message: 'Server error' });
+    }
+}
+
+const home = async (req, res) => {
+    try {
+        const products = await Product.find(); 
+        return res.status(200).json({ products });
+    } catch (error) {
+        console.error('Error fetching products:', error);
+        return res.status(500).json({ message: 'Internal Server Error' });
+    }
+}
+
+
+const handleLogout = async (req, res) => {
+    const token = req.cookies.jwt;
+
+    if (!token) {
+        return res.redirect("/home");
+    }
+    try {
+        res.clearCookie("jwt");
+        res.redirect("/home");
+        console.log("User logged out");
+    } catch (error) {
+        console.error("Error logging out:", error);
+        res.status(500).send("Internal Server Error");
     }
 };
 
@@ -336,5 +390,8 @@ module.exports = {
     singlepage,
     cartadd,
     getcart,
-    deletecart
+    deletecart,
+    user,
+    home,
+    handleLogout
 }

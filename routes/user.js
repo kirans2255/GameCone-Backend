@@ -6,6 +6,8 @@ const authuser = require('../middleware/user');
 
 router.post('/signup', user.Signup)
 
+router.get('/home',user.home)
+
 router.post('/login', user.Login)
 
 router.get('/auth/google', passport.authenticate('google', { scope: ['https://www.googleapis.com/auth/plus.login', 'email'] }));
@@ -28,5 +30,11 @@ router.post('/addcart',authuser,user.cartadd)
 router.get('/cart',authuser,user.getcart)
 
 router.delete('/deletecart',authuser,user.deletecart)
+
+router.get('/user',authuser,user.user)
+
+router.get('/logout',user.handleLogout)
+
+
 
 module.exports = router 

@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const userschema = new mongoose.Schema({
     name:String,
     email:String,
+    phoneNumber:String,
     password:String,
     isBlocked: { type: Boolean, default: false }
 })
