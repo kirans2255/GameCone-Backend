@@ -45,5 +45,4 @@ router.delete('/deletewishlist',authuser,user.deletewishlist)
 router.get('/logout',user.handleLogout)
 
 
-
 module.exports = router 

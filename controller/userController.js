@@ -230,7 +230,7 @@ const verifyOtp = (req, res) => {
 
 const home = async (req, res) => {
     try {
-        const products = await Product.find(); 
+        const products = await Product.find();
         return res.status(200).json({ products });
     } catch (error) {
         console.error('Error fetching products:', error);
@@ -428,19 +428,28 @@ const deletewishlist = async (req, res) => {
     const userId = req.user.id;
     const { productId } = req.body;
 
-    //  console.log(productId);
+    console.log(productId);
 
     try {
         const wishlist = await Wishlist.findOne({ userId });
+
+        // console.log("wishlist",wishlist)
 
         if (!wishlist) {
             return res.status(404).json({ message: 'wishlist not found' });
         }
 
-        const productIndex = wishlist.products.findIndex(product => product._id.toString() === productId);
+        let productIndex = wishlist.products.findIndex(product => product._id.toString() === productId);
+        console.log("wishlist", wishlist)
+
 
         if (productIndex === -1) {
-            return res.status(404).json({ message: 'Product not found in wishlist' });
+
+            productIndex = wishlist.products.findIndex(product => product.productId.toString() === productId);
+
+            if (productIndex === -1) {
+                return res.status(404).json({ message: 'Product not found in wishlist' });
+            }
         }
 
         wishlist.products.splice(productIndex, 1);
@@ -452,6 +461,8 @@ const deletewishlist = async (req, res) => {
         res.status(500).json({ message: 'Server error' });
     }
 };
+
+
 
 
 const handleLogout = async (req, res) => {
