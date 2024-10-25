@@ -414,9 +414,10 @@ const wishlistadd = async (req, res) => {
             }
         }
 
+        wishlist.isWishlist = !wishlist.isWishlist;
         await wishlist.save();
 
-        return res.status(200).json({ success: true, message: 'Product added to wishlist', wishlist });
+        return res.status(200).json({ success: true, message: 'Product added to wishlist', success:true, wishlist:  wishlist });
     } catch (error) {
         console.error('Error adding product to wishlist:', error);
         return res.status(500).json({ success: false, message: 'Error adding product to wishlist', error });

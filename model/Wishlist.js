@@ -26,6 +26,7 @@ const wishlist = new mongoose.Schema({
                 required: true,
             }
         },
+        isWishlist: { type: Boolean, default: false }
     }]
 })
 
